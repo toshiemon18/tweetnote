@@ -63,7 +63,7 @@ class TwitNote
 	end
 
 	#noteを生成
-	#noteのタイトルは作成時の時間とxする
+	#noteのタイトルは作成時の時間とする
 	def make_note(text, tags=nil)
 		now = Time::now
 
@@ -73,7 +73,7 @@ class TwitNote
 		note.title = "#{now.year}-#{now.month}-#{now.day}(#{now.hour}:#{now.min}:#{now.sec})"
 		note.content = body
 		note.notebookGuid = @note_store.getDefaultNotebook(@token).guid
-		note.tagNames = [tags] if tags
+		note.tagNames = tags if tags
 
 		note
 	end
