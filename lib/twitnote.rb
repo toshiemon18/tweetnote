@@ -46,7 +46,7 @@ class TwitNote
 		tags = []
 		tags.each do |tag|
 			status["entities"]["hashtags"].each do |tag_text|
-				if tag_text["text"] != "tweetnote" then
+				unless tag_text["text"] == "tweetnote" then
 					tag = tag_text["text"]
 				end
 			end
@@ -78,11 +78,12 @@ class TwitNote
 	end
 
 	#"#tweetnote"を含むログイン中のTwitterアカウントによるツイートを取得、ノートの形式にデータを加工してEvernoteにアップロード
+	#"--quit"を含むツイートを取得したらアプリケーションを終了する旨のリプライをユーザに送って終了する
 	def search_tweet(track="#tweetnote")
 		@twitclient.track_stream(track) do |status|
 			if status["user"]["screen_name"] == @me["screen_name"] then
 				status["text"].slice!(track + " ")
-				if !(status["text"] == "quit") then 
+				unless status["text"].match(/.*--quit*./) then 
 					hashtags = extract_tgas(status)
 					note_content = tweet_demolish(status["text"], hashtags) 
 					note = make_note(note_content, hashtags)
@@ -96,7 +97,7 @@ class TwitNote
 						puts "Exception that occurred is #{e}"
 					end
 				else 
-					@twitclient.update("@#{me["screen_name"]} tweetnoteを終了します")
+					@twitclient.update("@#{@me["screen_name"]} tweetnoteを終了します")
 					puts "Disconected."
 					exit
 				end
