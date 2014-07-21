@@ -46,19 +46,19 @@ class TwitNote
 		tags = []
 		tags.each do |tag|
 			status["entities"]["hashtags"].each do |tag_text|
-				tag = tag_text["text"]
+				if tag_text["text"] != "tweetnote" then
+					tag = tag_text["text"]
+				end
 			end
 		end
-
 		tags
 	end
 
 	#ツイート本文からハッシュタグを削除
 	def tweet_demolish(status_text, hashtags)
 		hashtags.each do |tag|
-			status_text.delete!("#" + "#{tag["text"]}" + " ")
+			status_text.slice!("#" + "#{tag["text"]}" + " ")
 		end
-
 		status_text
 	end
 
@@ -74,7 +74,6 @@ class TwitNote
 		note.content = body
 		note.notebookGuid = @note_store.getDefaultNotebook(@token).guid
 		note.tagNames = tags if tags
-
 		note
 	end
 
@@ -83,18 +82,23 @@ class TwitNote
 		@twitclient.track_stream(track) do |status|
 			if status["user"]["screen_name"] == @me["screen_name"] then
 				status["text"].slice!(track + " ")
+				if !(status["text"] == "quit") then 
+					hashtags = extract_tgas(status)
+					note_content = tweet_demolish(status["text"], hashtags) 
+					note = make_note(note_content, hashtags)
 
-				hashtags = extract_tgas(status)
-				note_content = tweet_demolish(status["text"], hashtags) 
-				note = make_note(note_content, hashtags)
-
-				begin
-					@note_store.createNote(@token, note)
-					puts "Successed cearted note. (at #{Time.now})"
-				rescue => e
-					@twitclient.update("@#{@me["screen_name"]} failed to upload the note. \n #{e}")
-					puts "Field create note. (at #{Time.now})"
-					puts "Exception that occurred is #{e}"
+					begin
+						@note_store.createNote(@token, note)
+						puts "Successed cearted note. (at #{Time.now})"
+					rescue => e
+						@twitclient.update("@#{@me["screen_name"]} failed to upload the note. \n #{e}")
+						puts "Field create note. (at #{Time.now})"
+						puts "Exception that occurred is #{e}"
+					end
+				else 
+					@twitclient.update("@#{me["screen_name"]} tweetnoteを終了します")
+					puts "Disconected."
+					exit
 				end
 			end
 		end
@@ -103,7 +107,8 @@ class TwitNote
 	#OSがWin以外ならデーモン化する
 	def observe
 		puts "Boot TweetNote..."
-		@twitclient.update("@#{@me["screen_name"]} TweetNoteを起動しました。")
+		puts "Conected to Twitter and Evernote."
+		@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました")
 		require 'rbconfig'
 		platform = RbConfig::CONFIG["target_os"].downcase
 		os = platform =~ /mswin(?!ce)|mingw|cygwin|bccwin/ ? "win" : (platform =~ /linux/ ? "linux" : "other")
