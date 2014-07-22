@@ -18,7 +18,11 @@ require 'json'
 
 #なんかこの一行がないとEvernote側の通信がこける
 #そのくせ警告だして来るしたぶんEvernoteOauthが悪い
-OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
+begin
+	OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
+rescue => e
+	puts e
+end
 
 class TwitNote
 	# initializeでconfig.rbの定数をロードするので、起動前にかならずconfig.rbの中身が満足か確認すること
@@ -45,10 +49,8 @@ class TwitNote
 	def extract_tgas(status)
 		tags = []
 		tags.each do |tag|
-			status["entities"]["hashtags"].each do |tag_text|
-				unless tag_text["text"] == "tweetnote" then
-					tag = tag_text["text"]
-				end
+			status["entities"]["hashtags"].each do |status_tag|
+				tag = status_tag["text"].to_s
 			end
 		end
 		tags
@@ -57,7 +59,9 @@ class TwitNote
 	#ツイート本文からハッシュタグを削除
 	def tweet_demolish(status_text, hashtags)
 		hashtags.each do |tag|
-			status_text.slice!("#" + "#{tag["text"]}" + " ")
+			if tag["text"] != "tweetnote" then
+				status_text.slice!("#" + "#{tag["text"]}" + " ")
+			end
 		end
 		status_text
 	end
@@ -71,9 +75,10 @@ class TwitNote
 		body << "<en-note>#{text}</en-note>"
 		note = Evernote::EDAM::Type::Note.new
 		note.title = "#{now.year}-#{now.month}-#{now.day}(#{now.hour}:#{now.min}:#{now.sec})"
-		note.content = body
+		note.content = body.to_s
 		note.notebookGuid = @note_store.getDefaultNotebook(@token).guid
 		note.tagNames = tags if tags
+
 		note
 	end
 
@@ -82,7 +87,7 @@ class TwitNote
 	def search_tweet(track="#tweetnote")
 		@twitclient.track_stream(track) do |status|
 			if status["user"]["screen_name"] == @me["screen_name"] then
-				status["text"].slice!(track + " ")
+				status["text"].slice!("#{track}" + " ")
 				unless status["text"].match(/.*--quit*./) then 
 					hashtags = extract_tgas(status)
 					note_content = tweet_demolish(status["text"], hashtags) 
@@ -97,8 +102,8 @@ class TwitNote
 						puts "Exception that occurred is #{e}"
 					end
 				else 
-					@twitclient.update("@#{@me["screen_name"]} tweetnoteを終了します")
-					puts "Disconected."
+					#@twitclient.update("@#{@me["screen_name"]} tweetnoteを終了します")
+					puts "Disconnected."
 					exit
 				end
 			end
@@ -109,7 +114,7 @@ class TwitNote
 	def observe
 		puts "Boot TweetNote..."
 		puts "Conected to Twitter and Evernote."
-		@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました")
+		#@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました")
 		require 'rbconfig'
 		platform = RbConfig::CONFIG["target_os"].downcase
 		os = platform =~ /mswin(?!ce)|mingw|cygwin|bccwin/ ? "win" : (platform =~ /linux/ ? "linux" : "other")
