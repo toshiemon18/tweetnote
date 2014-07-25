@@ -16,8 +16,10 @@ $RECYCLE.BIN/
 
 #CS\CKとか書いてあるファイルは弾きたいよね
 config.rb
+#SublimeTextのプロジェクトファイルもいらないから弾く
 *.sublime-project
 *.sublime-workspace
+
 
 # =========================
 # Operating System Files

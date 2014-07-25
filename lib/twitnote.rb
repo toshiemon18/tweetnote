@@ -18,11 +18,7 @@ require 'json'
 
 #なんかこの一行がないとEvernote側の通信がこける
 #そのくせ警告だして来るしたぶんEvernoteOauthが悪い
-begin
-	OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
-rescue => e
-	puts e
-end
+OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 class TwitNote
 	# initializeでconfig.rbの定数をロードするので、起動前にかならずconfig.rbの中身が満足か確認すること
@@ -37,6 +33,9 @@ class TwitNote
 				consumer_secret: EVERNOTE[1], 
 				sandbox: SANDBOX
 			)
+		@track_word = "#tweetnote"
+		@exit_command = "--quit"
+		@feed_back = FEED_BACK
 		
 		begin
 			@note_store = client.note_store
@@ -45,24 +44,31 @@ class TwitNote
 		end
 	end
 
+	#現在の設定状況をハッシュオブジェクトにして返す
+	def validation
+		validation = {"sandbox_mode" => "Sandbox mode : #{SANDBOX} ", 
+				"send_reply_mode" => "Send reply mode : #{FEED_BACK}", 
+				"logging_in_twitter_account" => "Logging Twitter account : #{@me["screen_name"].to_s}"
+			}
+	end
+
 	#ツイートのJSONからハッシュタグを抽出
 	def extract_tgas(status)
-		tags = []
-		tags.each do |tag|
-			status["entities"]["hashtags"].each do |status_tag|
-				tag = status_tag["text"].to_s
-			end
+		hashtags = []
+		cnt = 0
+		status["entities"]["hashtags"].each do |tag|
+			hashtags[cnt] = tag["text"].to_s
+			cnt += 1
 		end
-		tags
+		hashtags
 	end
 
 	#ツイート本文からハッシュタグを削除
 	def tweet_demolish(status_text, hashtags)
 		hashtags.each do |tag|
-			if tag["text"] != "tweetnote" then
-				status_text.slice!("#" + "#{tag["text"]}" + " ")
-			end
+			status_text.to_s.slice!("#" + "#{tag}" + " ")
 		end
+
 		status_text
 	end
 
@@ -82,39 +88,48 @@ class TwitNote
 		note
 	end
 
-	#"#tweetnote"を含むログイン中のTwitterアカウントによるツイートを取得、ノートの形式にデータを加工してEvernoteにアップロード
-	#"--quit"を含むツイートを取得したらアプリケーションを終了する旨のリプライをユーザに送って終了する
-	def search_tweet(track="#tweetnote")
-		@twitclient.track_stream(track) do |status|
+	#@track_wordの値を含むユーザーのツイートをノートの形式にデータを加工してEvernoteにアップロード
+	#"--quit"を含むツイートを取得したらプログラムを終了する
+	#FEED_BACK=trueの場合はリプライを送信
+	def search_tweet
+		@twitclient.track_stream(@track_word) do |status|
 			if status["user"]["screen_name"] == @me["screen_name"] then
-				status["text"].slice!("#{track}" + " ")
-				unless status["text"].match(/.*--quit*./) then 
-					hashtags = extract_tgas(status)
-					note_content = tweet_demolish(status["text"], hashtags) 
-					note = make_note(note_content, hashtags)
+				if status["text"] then
+					unless status["text"].match(/.*#{@exit_command}*./) then
+						hashtags = extract_tgas(status)
+						note_content = tweet_demolish(status["text"], hashtags)
+						note = make_note(note_content, hashtags)
 
-					begin
-						@note_store.createNote(@token, note)
-						puts "Successed cearted note. (at #{Time.now})"
-					rescue => e
-						@twitclient.update("@#{@me["screen_name"]} failed to upload the note. \n #{e}")
-						puts "Field create note. (at #{Time.now})"
-						puts "Exception that occurred is #{e}"
+						begin
+							@note_store.createNote(@token, note)
+							puts "Successed cearted note. (at #{Time.now})"
+							@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
+						rescue => e
+							@twitclient.update("@#{@me["screen_name"]} ノートのアップロードに失敗しました \n #{e}")
+							puts "Field create note. (at #{Time.now})"
+							puts "Exception that occurred is #{e}"
+						end
+					else 
+						@twitclient.update("@#{@me["screen_name"]} tweetnoteを終了します") if @feed_back
+						puts "Disconnected."
+						exit
 					end
-				else 
-					#@twitclient.update("@#{@me["screen_name"]} tweetnoteを終了します")
-					puts "Disconnected."
-					exit
 				end
 			end
 		end
 	end
 
 	#OSがWin以外ならデーモン化する
+	#TL監視
 	def observe
+		validation = self.validation
 		puts "Boot TweetNote..."
+		validation.each_key do |key|
+			puts validation[key]
+		end
 		puts "Conected to Twitter and Evernote."
-		#@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました")
+		puts nil
+		@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました") if @feed_back
 		require 'rbconfig'
 		platform = RbConfig::CONFIG["target_os"].downcase
 		os = platform =~ /mswin(?!ce)|mingw|cygwin|bccwin/ ? "win" : (platform =~ /linux/ ? "linux" : "other")

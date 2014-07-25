@@ -1,4 +1,4 @@
-#coding : utf-8
+#-*- coding : utf-8 -*-
 #
 # Tweetlib
 #
@@ -38,12 +38,10 @@ module Tweetlib
 				oauth_token,
 				oauth_token_secret
 		  	)
-
 		end
 
 		def fetch_token
 			request_token = @consumer.get_request_token
-
 			puts "Please access this URL. : #{request_token.authorize_url}"
 			puts "Please enter the PIN. : "
 			pin = STDIN.gets.chomp
@@ -67,13 +65,11 @@ module Tweetlib
 		
 		#update tweet
 		def update(body, id="")
-
 			if id.empty? then
 				@access_token.post(
 					"/1.1/statuses/update.json",
 					{status: body.to_s}
 				)
-
 			else
 				@access_token.post(
 					"/1.1/statuses/update.json",
@@ -81,7 +77,6 @@ module Tweetlib
 					in_reply_to_status_id: id.to_s }
 				)
 			end
-
 		end
 
 		#delete tweet
@@ -150,10 +145,9 @@ module Tweetlib
 				          			status = JSON.parse(line)
 							rescue
 				          			break
-				        		end
-
+				        			end
 				        		yield status
-				        	end
+					        	end
 					end
 				end
 			end

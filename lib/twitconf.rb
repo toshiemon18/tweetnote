@@ -1,4 +1,4 @@
-#coding : utf-8
+#-*- coding : utf-8 -*-
 #
 #TwitConf
 #
@@ -10,7 +10,7 @@
 $:.unshift File.dirname(__FILE__)
 require 'rubygems'
 require 'oauth'
-require 'tweetnote'
+require 'tweetlib'
 require_relative ".././cnf/config"
 
 class TwitConf

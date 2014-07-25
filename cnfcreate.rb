@@ -1,7 +1,6 @@
-t#coding : utf-8
+#-*- coding : utf-8 -*-
 
 CONFIG = <<CNF
-#coding : utf-8
 
 TWITTER = []
 TWITTER << "YOURCONSUMERKEY"
@@ -13,19 +12,28 @@ EVERNOTE = []
 EVERNOTE << "YOURCONSUMERKEY"
 EVERNOTE << "YOURCONSUMERSECRET"
 EVERNOTE << "YOURTOKEN"
-SANDBOX = false  # true or false (デフォルトではfalseです)
+#Evernoteのサンドボックスモードで動作させるか
+#trueでサンドボックスモード有効
+#デフォルトではfalseが設定されます
+SANDBOX = false
+
+#起動時とノート作成時、プログラム終了時にリプライを自身に対し送信します
+#デフォルトではtrueになっており、リプライが送信されます
+#リプライがうざったらしいと感じたならfalseにすることを推奨します
+FEED_BACK = true
 
 CNF
 
 class ConfigGenerator
 	def initialize(name)
+		@file_name = name.to_s
 		@name = "./cnf/" + name + ".rb"
 	end
 
 	def generate
 		exist = true
-		Dir::glob("config.rb") do |file|
-			exist = false if !(file == "configgenerator.rb")
+		Dir::glob("#{@file_name}.rb") do |file|
+			exist = false if !(file == "#{@file_name}.rb")
 		end
 		if !exist then
 			begin
@@ -36,7 +44,7 @@ class ConfigGenerator
 				retry
 			end
 		else
-			puts "config.rb already exist!"
+			puts "#{@file_name}.rb already exist!"
 		end
 	end
 end
