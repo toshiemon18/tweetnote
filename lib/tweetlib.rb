@@ -14,46 +14,70 @@ require 'json'
 module Tweetlib
 	class Client
 		def initialize(keys)
-			consumer_key = keys[0]
-			consumer_secret = keys[1]
-			oauth_token = keys[2]
-			oauth_token_secret = keys[3]
+			@consumer_key = keys[0]
+			@consumer_secret = keys[1]
+			@oauth_token = keys[2]
+			@oauth_token_secret = keys[3]
 
 			@consumer = OAuth::Consumer.new(
-				consumer_key,
-				consumer_secret,
+				@consumer_key,
+				@consumer_secret,
 				{site:  "https://api.twitter.com/"}
 			)
 
-			if oauth_token.empty? || oauth_token == nil || oauth_token_secret.empty? || oauth_token_secret == nil then
+			if @oauth_token.empty? || @oauth_token == nil || @oauth_token_secret.empty? || @oauth_token_secret == nil then
 				puts "Please access the following URL because there is no access token."
 				buf_token = []
-				buf_token = self.token_fetch
-				oauth_token = buf_token[0]
-				oauth_token_secret = buf_token[1]
+				buf_token = self.fetch_token
+				@oauth_token = buf_token[0]
+				@oauth_token_secret = buf_token[1]
 			end
 
 			@access_token = OAuth::AccessToken.new(
 				@consumer,
-				oauth_token,
-				oauth_token_secret
+				@oauth_token,
+				@oauth_token_secret
 		  	)
+		end
+
+		def get_ck
+			@consumer_key
+		end
+
+		def get_cs
+			@consumer_secret
+		end
+
+		def get_oauth_token
+			@oauth_token
+		end
+
+		def get_oauth_token_secret
+			@oauth_token_secret
 		end
 
 		def fetch_token
 			request_token = @consumer.get_request_token
-			puts "Please access this URL. : #{request_token.authorize_url}"
-			puts "Please enter the PIN. : "
+			puts "Please access this URL : #{request_token.authorize_url}"
+			print "Please enter the PIN : "
 			pin = STDIN.gets.chomp
 
 			token = request_token.get_access_token(
-				oauth_token: request_token.token,
-				oauth_verifier: pin
+				{oauth_verifier: pin}
 			)
 
 			access_token = []
 			access_token << token.token.to_s
 			access_token << token.secret.to_s
+			config = File.open(".././cnf/config.rb", "r+")
+			config.each_line do |lin|
+				line.chomp!
+				if line == "TWITTER << \"YOUROAUTHTOKEN\"" then
+					line = "TWITTER << " + access_token[0].to_s
+				elsif line == "TWITTER << \"YOUROAUTHTOKENSECRET\"" then
+					line = "TWITTER << " + access_token[1].to_s
+				end
+			end
 
 			access_token
 		end
