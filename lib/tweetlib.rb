@@ -22,7 +22,7 @@ module Tweetlib
 			@consumer = OAuth::Consumer.new(
 				@consumer_key,
 				@consumer_secret,
-				{site:  "https://api.twitter.com/"}
+				{site:  "https://api.twitter.com"}
 			)
 
 			if @oauth_token.empty? || @oauth_token == nil || @oauth_token_secret.empty? || @oauth_token_secret == nil then
@@ -60,15 +60,16 @@ module Tweetlib
 			request_token = @consumer.get_request_token
 			puts "Please access this URL : #{request_token.authorize_url}"
 			print "Please enter the PIN : "
-			pin = STDIN.gets.chomp
+			pin = STDIN.gets.to_i.chomp
 
 			token = request_token.get_access_token(
-				{oauth_verifier: pin}
-			)
+					:oauth_token => request_token.token,
+					oauth_verifier: pin
+				)
 
 			access_token = []
-			access_token << token.token.to_s
-			access_token << token.secret.to_s
+			access_token << token.token
+			access_token << token.secret
 			config = File.open(".././cnf/config.rb", "r+")
 			config.each_line do |lin|
 				line.chomp!
@@ -81,12 +82,12 @@ module Tweetlib
 
 			access_token
 		end
-		
+
 		def fetch_account_info
 			response = @access_token.get("/1.1/account/verify_credentials.json")
 			JSON.parse(response.body)
 		end
-		
+
 		#update tweet
 		def update(body, id="")
 			if id.empty? then

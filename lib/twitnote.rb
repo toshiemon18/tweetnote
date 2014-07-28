@@ -30,13 +30,12 @@ class TwitNote
 		client = EvernoteOAuth::Client.new(
 				token: @token,
 				consumer_key: EVERNOTE[0],
-				consumer_secret: EVERNOTE[1], 
+				consumer_secret: EVERNOTE[1],
 				sandbox: SANDBOX
 			)
 		@track_word = "#tweetnote"
 		@exit_command = "--quit"
 		@feed_back = FEED_BACK
-		
 		begin
 			@note_store = client.note_store
 		rescue => e
