@@ -19,6 +19,8 @@ config.rb
 #SublimeTextのプロジェクトファイルもいらないから弾く
 *.sublime-project
 *.sublime-workspace
+#testディレクトの中身は弾きたい
+test/
 
 
 # =========================
