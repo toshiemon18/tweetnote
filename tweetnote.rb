@@ -7,5 +7,7 @@
 
 require './lib/twitnote'
 
-tweetnote = TwitNote.new
+app_name = "tweetnote"
+
+tweetnote = TwitNote.new(app_name)
 tweetnote.observe

@@ -5,6 +5,8 @@
 
 #Twitter関連のAPIさわさわするためのライブラリ
 
+$:.unshift File.dirname(__FILE__)
+
 require 'rubygems'
 require 'net/https'
 require 'openssl'
@@ -22,7 +24,7 @@ module Tweetlib
 			@consumer = OAuth::Consumer.new(
 				@consumer_key,
 				@consumer_secret,
-				{site:  "https://api.twitter.com"}
+				site:  "https://api.twitter.com"
 			)
 
 			if @oauth_token.empty? || @oauth_token == nil || @oauth_token_secret.empty? || @oauth_token_secret == nil then
@@ -40,38 +42,19 @@ module Tweetlib
 		  	)
 		end
 
-		def get_ck
-			@consumer_key
-		end
-
-		def get_cs
-			@consumer_secret
-		end
-
-		def get_oauth_token
-			@oauth_token
-		end
-
-		def get_oauth_token_secret
-			@oauth_token_secret
-		end
-
 		def fetch_token
 			request_token = @consumer.get_request_token
-			puts "Please access this URL : #{request_token.authorize_url}"
+			puts "Please access this URL : \n#{request_token.authorize_url}"
 			print "Please enter the PIN : "
-			pin = STDIN.gets.to_i.chomp
+			pin = STDIN.gets.chomp
 
-			token = request_token.get_access_token(
-					:oauth_token => request_token.token,
-					oauth_verifier: pin
-				)
+			token = request_token.get_access_token(oauth_verifier: pin)
 
 			access_token = []
-			access_token << token.token
-			access_token << token.secret
-			config = File.open(".././cnf/config.rb", "r+")
-			config.each_line do |lin|
+			puts access_token << token.token
+			puts access_token << token.secret
+			config = File.open("../cnf/config.rb", "r+")
+			config.each_line do |line|
 				line.chomp!
 				if line == "TWITTER << \"YOUROAUTHTOKEN\"" then
 					line = "TWITTER << " + access_token[0].to_s
