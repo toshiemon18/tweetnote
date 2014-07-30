@@ -5,6 +5,7 @@
 #TwitNoteクラスのinitializing
 
 $:.unshift File.dirname(__FILE__)
+
 require_relative ".././cnf/config"
 require 'tweetlib'
 require 'rubygems'
