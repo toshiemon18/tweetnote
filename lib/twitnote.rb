@@ -8,41 +8,16 @@
 
 $:.unshift File.dirname(__FILE__)
 
-require_relative ".././cnf/config"
-require 'tweetlib'
+require 'initTwitnote'
 require 'noteheader'
 require 'rubygems'
-require 'evernote_oauth'
 require 'openssl'
-require 'json'
 
 #なんかこの一行がないとEvernote側の通信がこける
 #そのくせ警告だして来るしたぶんEvernoteOauthが悪い
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
-class TwitNote
-	# initializeでconfig.rbの定数をロードするので、起動前にかならずconfig.rbの中身が満足か確認すること
-	#確認しないで起動したらあなたが末代です
-	def initialize
-		@twitclient = Tweetlib::Client.new(TWITTER)
-		@me = @twitclient.fetch_account_info
-		@token = EVERNOTE[2]
-		client = EvernoteOAuth::Client.new(
-				token: @token,
-				consumer_key: EVERNOTE[0],
-				consumer_secret: EVERNOTE[1],
-				sandbox: SANDBOX
-			)
-		@track_word = "#tweetnote"
-		@exit_command = "--quit"
-		@feed_back = FEED_BACK
-		begin
-			@note_store = client.note_store
-		rescue => e
-			puts e
-		end
-	end
-
+class TwitNote < InitTwitNote
 	#現在の設定状況をハッシュオブジェクトにして返す
 	def validation
 		validation = {"sandbox_mode" => "Sandbox mode : #{SANDBOX} ", 
