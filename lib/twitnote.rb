@@ -18,11 +18,14 @@ require 'openssl'
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 class TwitNote < InitTwitNote
+
 	#現在の設定状況をハッシュオブジェクトにして返す
 	def validation
-		validation = {"sandbox_mode" => "Sandbox mode : #{SANDBOX} ", 
-				"send_reply_mode" => "Send reply mode : #{FEED_BACK}", 
-				"logging_in_twitter_account" => "Logging Twitter account : #{@me["screen_name"].to_s}"
+		validation = {"sandbox_mode" => SANDBOX, 
+				"send_reply_mode" => FEED_BACK, 
+				"logging_in_twitter_account" => @me["screen_name"].to_s,
+				"track_word" => @track_word,
+				"wxit_commad" => @exit_command
 			}
 	end
 
@@ -34,6 +37,7 @@ class TwitNote < InitTwitNote
 			hashtags[cnt] = tag["text"].to_s
 			cnt += 1
 		end
+
 		hashtags
 	end
 
@@ -53,6 +57,7 @@ class TwitNote < InitTwitNote
 
 		body = "#{NOTE_HEADER}"
 		body << "<en-note>#{text}</en-note>"
+		
 		note = Evernote::EDAM::Type::Note.new
 		note.title = "#{now.year}-#{now.month}-#{now.day}(#{now.hour}:#{now.min}:#{now.sec})"
 		note.content = body.to_s
@@ -60,6 +65,13 @@ class TwitNote < InitTwitNote
 		note.tagNames = tags if tags
 
 		note
+	end
+
+	#ノートのオブジェクトを生成して返す
+	def setup_note(status)
+		hashtags = extract_tgas(status)
+		note_content = tweet_demolish(status["text"], hashtags)
+		note = make_note(note_content, hashtags)
 	end
 
 	#@track_wordの値を含むユーザーのツイートをノートの形式にデータを加工してEvernoteにアップロード
@@ -70,10 +82,8 @@ class TwitNote < InitTwitNote
 			if status["user"]["screen_name"] == @me["screen_name"] then
 				if status["text"] then
 					unless status["text"].match(/.*#{@exit_command}*./) then
-						hashtags = extract_tgas(status)
-						note_content = tweet_demolish(status["text"], hashtags)
-						note = make_note(note_content, hashtags)
-
+						note = setup_note(status)
+						
 						begin
 							@note_store.createNote(@token, note)
 							puts "Successed cearted note. (at #{Time.now})"
@@ -85,6 +95,7 @@ class TwitNote < InitTwitNote
 						end
 					else 
 						@twitclient.update("@#{@me["screen_name"]} tweetnoteを終了します") if @feed_back
+						puts nil
 						puts "Disconnected."
 						exit
 					end
@@ -93,17 +104,18 @@ class TwitNote < InitTwitNote
 		end
 	end
 
+	def print_config
+
+	end
+
 	#OSがWin以外ならデーモン化する
 	#TL監視
 	def observe
-		validation = self.validation
 		puts "Boot TweetNote..."
-		validation.each_key do |key|
-			puts validation[key]
-		end
 		puts "Conected to Twitter and Evernote."
 		puts nil
 		@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました") if @feed_back
+		
 		require 'rbconfig'
 		platform = RbConfig::CONFIG["target_os"].downcase
 		os = platform =~ /mswin(?!ce)|mingw|cygwin|bccwin/ ? "win" : (platform =~ /linux/ ? "linux" : "other")

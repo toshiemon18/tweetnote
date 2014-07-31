@@ -18,6 +18,7 @@ class InitTwitNote
 	attr_accessor :feed_back
 
 	def initialize(key_word)
+		puts "Initializing Tweetnote"
 		@twitclient = Tweetlib::Client.new(TWITTER)
 		@me = @twitclient.fetch_account_info
 		@token = EVERNOTE[2]
