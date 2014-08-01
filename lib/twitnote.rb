@@ -20,9 +20,12 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 class TwitNote < InitTwitNote
 	#現在の設定状況をハッシュオブジェクトにして返す
 	def validation
-		validation = {"sandbox_mode" => "Sandbox mode : #{SANDBOX} ", 
-				"send_reply_mode" => "Send reply mode : #{FEED_BACK}", 
-				"logging_in_twitter_account" => "Logging Twitter account : #{@me["screen_name"].to_s}"
+		validation = {"sandbox_mode" => SANDBOX,
+				"send_reply_mode" => FEED_BACK,
+				"logging_in_twitter_account" => @me["screen_name"].to_s,
+				"track_word" => @track_word,
+				"exit_command" => @exit_command,
+				"heartbeat_command" => @heartbeat_command
 			}
 	end
 
@@ -62,6 +65,7 @@ class TwitNote < InitTwitNote
 		note
 	end
 
+	#終了コマンドが含まれているツイートを取得したらプロセスを終了する
 	def process_exit(status_text)
 		if status_text.match(/.*#{@exit_command}*./) then
 			@twitclient.update("@#{@me["screen_name"]} tweetnoteを終了します") if @feed_back
@@ -70,18 +74,22 @@ class TwitNote < InitTwitNote
 		end
 	end
 
+	#プロセスが生きてるかを確認するためのメソッド
+	#生きていればTrue
 	def process_exist?(status_text)
 		status_text.match(/.*#{@heartbeat_command}*./)
 	end
 
+	# プロセスが生きていればリプライで通知する
 	def heartbeat
 		@twitclient.update("@#{@me["screen_name"]} 生きてるYo!!")
 	end
 
+	# ツイートからノートのオブジェクトをセットアップする
 	def note_setup(status)
-		hashtags = extract_tgas(status)
-		note_content = tweet_demolish(status["text"], hashtags)
-		note = make_note(note_content, hashtags)
+		hashtags = self.extract_tgas(status)
+		note_content = self.tweet_demolish(status["text"], hashtags)
+		note = self.make_note(note_content, hashtags)
 	end
 
 	#@track_wordの値を含むユーザーのツイートをノートの形式にデータを加工してEvernoteにアップロード
@@ -89,11 +97,11 @@ class TwitNote < InitTwitNote
 	def search_tweet
 		@twitclient.track_stream(@track_word) do |status|
 			if status["user"]["screen_name"] == @me["screen_name"] then
-				process_exit(status["text"])
-				if process_exist?(status["text"]) then
-					heartbeat
+				self.process_exit(status["text"])
+				if self.process_exist?(status["text"]) then
+					self.heartbeat
 				else
-					note = note_setup(status)
+					note =self.note_setup(status)
 					begin
 						@note_store.createNote(@token, note)
 						puts "Successed cearted note. (at #{Time.now})"
@@ -108,14 +116,22 @@ class TwitNote < InitTwitNote
 		end
 	end
 
+	# 設定状況を表示
+	def print_config
+		validation = self.validation
+		puts "SandBox mode 			: #{validation["sandbox_mode"]}"
+		puts "Send reply mode 		: #{validation["send_reply_mode"]}"
+		puts "Logging in Twitter Account 	: #{validation["logging_in_twitter_account"]}"
+		puts "Track word 			: #{validation["track_word"]}"
+		puts "Exit command 			: #{validation["exit_command"]}"
+		puts "Heartbeat command 		: #{validation["heartbeat_command"]}"
+	end
+
 	#OSがWin以外ならデーモン化する
 	#TL監視
 	def observe
-		validation = self.validation
 		puts "Boot TweetNote..."
-		validation.each_key do |key|
-			puts validation[key]
-		end
+		self.print_config
 		puts "Conected to Twitter and Evernote."
 		puts nil
 		@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました") if @feed_back
