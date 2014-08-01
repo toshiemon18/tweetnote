@@ -82,7 +82,7 @@ class TwitNote < InitTwitNote
 
 	# プロセスが生きていればリプライで通知する
 	def heartbeat
-		@twitclient.update("@#{@me["screen_name"]} 生きてるYo!!")
+		@twitclient.update("@#{@me["screen_name"]}Yo")
 	end
 
 	# ツイートからノートのオブジェクトをセットアップする
