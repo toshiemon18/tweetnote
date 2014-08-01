@@ -41,7 +41,7 @@ class InitTwitNote
 		begin
 			@user_store = @client.user_store
 		rescue  => e
-			
+			puts e		
 		end
 	end
 end
