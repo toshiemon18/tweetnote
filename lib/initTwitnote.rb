@@ -18,7 +18,7 @@ class InitTwitNote
 	attr_accessor :heartbeat_command
 	attr_accessor :feed_back
 
-	def initialize(key_word)
+	def initialize
 		@twitclient = Tweetlib::Client.new(TWITTER)
 		@me = @twitclient.fetch_account_info
 		@token = EVERNOTE[2]
@@ -28,7 +28,7 @@ class InitTwitNote
 				consumer_secret: EVERNOTE[1],
 				sandbox: SANDBOX
 			)
-		@track_word = "#"+ "#{key_word}"
+		@track_word = "#tweetnote"
 		@exit_command = "--quit"
 		@heartbeat_command = "Yo"
 		@feed_back = FEED_BACK
