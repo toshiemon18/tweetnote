@@ -62,31 +62,46 @@ class TwitNote < InitTwitNote
 		note
 	end
 
+	def process_exit(status_text)
+		if status_text.match(/.*#{@exit_command}*./) then
+			@twitclient.update("@#{@me["screen_name"]} tweetnoteを終了します") if @feed_back
+			puts "Disconnected."
+			exit
+		end
+	end
+
+	def process_exist?(status_text)
+		status_text.match(/.*#{@heartbeat_command}*./)
+	end
+
+	def heartbeat
+		@twitclient.update("@#{@me["screen_name"]} 生きてるYo!!")
+	end
+
+	def note_setup(status)
+		hashtags = extract_tgas(status)
+		note_content = tweet_demolish(status["text"], hashtags)
+		note = make_note(note_content, hashtags)
+	end
+
 	#@track_wordの値を含むユーザーのツイートをノートの形式にデータを加工してEvernoteにアップロード
-	#"--quit"を含むツイートを取得したらプログラムを終了する
 	#FEED_BACK=trueの場合はリプライを送信
 	def search_tweet
 		@twitclient.track_stream(@track_word) do |status|
 			if status["user"]["screen_name"] == @me["screen_name"] then
-				if status["text"] then
-					unless status["text"].match(/.*#{@exit_command}*./) then
-						hashtags = extract_tgas(status)
-						note_content = tweet_demolish(status["text"], hashtags)
-						note = make_note(note_content, hashtags)
-
-						begin
-							@note_store.createNote(@token, note)
-							puts "Successed cearted note. (at #{Time.now})"
-							@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
-						rescue => e
-							@twitclient.update("@#{@me["screen_name"]} ノートのアップロードに失敗しました \n #{e}")
-							puts "Field create note. (at #{Time.now})"
-							puts "Exception that occurred is #{e}"
-						end
-					else 
-						@twitclient.update("@#{@me["screen_name"]} tweetnoteを終了します") if @feed_back
-						puts "Disconnected."
-						exit
+				process_exit(status["text"])
+				if process_exist?(status["text"]) then
+					heartbeat
+				else
+					note = note_setup(status)
+					begin
+						@note_store.createNote(@token, note)
+						puts "Successed cearted note. (at #{Time.now})"
+						@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
+					rescue => e
+						@twitclient.update("@#{@me["screen_name"]} ノートのアップロードに失敗しました \n #{e}")
+						puts "Field create note. (at #{Time.now})"
+						puts "Exception that occurred is #{e}"
 					end
 				end
 			end
