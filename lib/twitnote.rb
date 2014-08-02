@@ -29,6 +29,14 @@ class TwitNote < InitTwitNote
 			}
 	end
 
+	def check_tweet_text(status)
+		status["entities"]["hashtags"].each do |tag|
+			if tag["text"] == @track_word then
+				return true
+			end
+		end
+	end
+
 	#ツイートのJSONからハッシュタグを抽出
 	def extract_tgas(status)
 		hashtags = []
@@ -92,24 +100,26 @@ class TwitNote < InitTwitNote
 		note = self.make_note(note_content, hashtags)
 	end
 
-	#@track_wordの値を含むユーザーのツイートをノートの形式にデータを加工してEvernoteにアップロード
+	#@track_wordを含む自身のツイートをノートの形式にデータを加工してEvernoteにアップロード
 	#FEED_BACK=trueの場合はリプライを送信
-	def search_tweet
-		@twitclient.track_stream(@track_word) do |status|
-			if status["user"]["screen_name"] == @me["screen_name"] then
-				self.process_exit(status["text"])
-				if self.process_exist?(status["text"]) then
-					self.heartbeat
-				else
-					note =self.note_setup(status)
-					begin
-						@note_store.createNote(@token, note)
-						puts "Successed cearted note. (at #{Time.now})"
-						@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
-					rescue => e
-						@twitclient.update("@#{@me["screen_name"]} ノートのアップロードに失敗しました \n #{e}")
-						puts "Field create note. (at #{Time.now})"
-						puts "Exception that occurred is #{e}"
+	def upload_note
+		@twitclient.user_stream do |status|
+			if status["text"] then
+				if status["user"]["screen_name"] == @me["screen_name"] then
+					self.process_exit(status["text"])
+					if self.process_exist?(status["text"]) then
+						self.heartbeat
+					else
+						note =self.note_setup(status)
+						begin
+							@note_store.createNote(@token, note)
+							puts "Successed cearted note. (at #{Time.now})"
+							@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
+						rescue => e
+							@twitclient.update("@#{@me["screen_name"]} ノートのアップロードに失敗しました \n #{e}")
+							puts "Field create note. (at #{Time.now})"
+							puts "Exception that occurred is #{e}"
+						end
 					end
 				end
 			end
@@ -144,7 +154,7 @@ class TwitNote < InitTwitNote
 		end
 
 		loop do 
-			self.search_tweet
+			self.upload_note
 		end
 	end
 end
