@@ -65,9 +65,9 @@ module Tweetlib
 		end
 
 		#track streaming
-		def track_stream(track_word, &block)
+		def track_stream(track_word=[], &block)
 			uri = URI.parse("https://stream.twitter.com/1.1/statuses/filter.json")
-			param = { track: track_word }
+			param = { track: track_words }
 
 			self.connection_streaming(uri, param) do |status|
 				yield status
@@ -105,7 +105,7 @@ module Tweetlib
 							rescue
 				          			break
 				        			end
-				        		yield status
+				        			yield status
 					        	end
 					end
 				end

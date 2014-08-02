@@ -2,7 +2,7 @@
 #initTwitnote
 #
 
-#TwitNoteクラスのinitializing
+#TwitNoteクラスのinitializie
 
 $:.unshift File.dirname(__FILE__)
 
@@ -34,12 +34,14 @@ class InitTwitNote
 		@feed_back = FEED_BACK
 		begin
 			@note_store = @client.note_store
+
 		rescue => e
 			puts e
 		end
 
 		begin
 			@user_store = @client.user_store
+			
 		rescue  => e
 			puts e		
 		end
