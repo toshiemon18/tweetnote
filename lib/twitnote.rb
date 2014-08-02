@@ -82,7 +82,7 @@ class TwitNote < InitTwitNote
 
 	# プロセスが生きていればリプライで通知する
 	def heartbeat
-		@twitclient.update("@#{@me["screen_name"]}Yo")
+		@twitclient.update("@#{@me["screen_name"]} ✋(   ͡° ͜ʖ ͡° ) (͡° ͜ʖ ͡°   )✋")
 	end
 
 	# ツイートからノートのオブジェクトをセットアップする
@@ -138,7 +138,6 @@ class TwitNote < InitTwitNote
 		require 'rbconfig'
 		platform = RbConfig::CONFIG["target_os"].downcase
 		os = platform =~ /mswin(?!ce)|mingw|cygwin|bccwin/ ? "win" : (platform =~ /linux/ ? "linux" : "other")
-
 		unless os == "win" then
 			Process.daemon
 			puts "This is as daemon process."
