@@ -30,6 +30,7 @@ class TwitNote < InitTwitNote
 	end
 
 	def check_tweet_text(status)
+		return false if status["entities"]["hashtags"].length == 0
 		status["entities"]["hashtags"].each do |tag|
 			if tag["text"] == @track_word then
 				return true
@@ -109,7 +110,7 @@ class TwitNote < InitTwitNote
 					self.process_exit(status["text"])
 					if self.process_exist?(status["text"]) then
 						self.heartbeat
-					else
+					elsif check_tweet_text(status) then
 						note =self.note_setup(status)
 						begin
 							@note_store.createNote(@token, note)

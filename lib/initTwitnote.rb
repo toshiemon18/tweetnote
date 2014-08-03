@@ -34,7 +34,6 @@ class InitTwitNote
 		@feed_back = FEED_BACK
 		begin
 			@note_store = @client.note_store
-
 		rescue => e
 			puts e
 		end
