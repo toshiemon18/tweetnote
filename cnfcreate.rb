@@ -5,8 +5,6 @@ CONFIG = <<CNF
 TWITTER = []
 TWITTER << "YOURCONSUMERKEY"
 TWITTER << "YOURCONSUMERSECRET"
-TWITTER << "YOUROAUTHTOKEN"
-TWITTER << "YOUROAUTHTOKENSECRET"
 
 EVERNOTE = []
 EVERNOTE << "YOURCONSUMERKEY"
@@ -31,6 +29,7 @@ class ConfigGenerator
 	end
 
 	def generate
+		Dir::mkdir("cnf") unless Dir::exits?("/cnf")
 		exist = true
 		Dir::glob("#{@file_name}.rb") do |file|
 			exist = false if !(file == "#{@file_name}.rb")
