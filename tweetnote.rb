@@ -5,6 +5,6 @@
 
 #TwitterからEvernoteへアップロードする
 
-require './lib/twitnote'
+require './lib/twitnote.rb'
 
 TwitNote.new.observe

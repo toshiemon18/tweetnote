@@ -15,12 +15,14 @@ $RECYCLE.BIN/
 *.msp
 
 #CS\CKとか書いてあるファイルは弾きたいよね
-config.rb
+#Rubyの定数で管理してたのをjsonに変更した
+*.json
 #SublimeTextのプロジェクトファイルもいらないから弾く
 *.sublime-project
 *.sublime-workspace
 #testディレクトの中身は弾きたい
 test/
+
 
 
 # =========================

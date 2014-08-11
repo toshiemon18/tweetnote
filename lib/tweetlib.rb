@@ -7,7 +7,7 @@
 
 $:.unshift File.dirname(__FILE__)
 
-require 'initClient'
+require 'initClient.rb'
 require 'rubygems'
 require 'net/https'
 require 'openssl'
@@ -16,7 +16,7 @@ require 'json'
 
 module Tweetlib
 	class Client < InitClient
-		
+
 		def fetch_account_info
 			response = @access_token.get("/1.1/account/verify_credentials.json")
 			JSON.parse(response.body)

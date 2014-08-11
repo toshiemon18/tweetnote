@@ -8,7 +8,7 @@
 
 $:.unshift File.dirname(__FILE__)
 
-require 'initTwitnote'
+require 'initTwitnote.rb'
 require 'noteheader'
 require 'rubygems'
 require 'openssl'
@@ -46,6 +46,7 @@ class TwitNote < InitTwitNote
 			hashtags[cnt] = tag["text"].to_s
 			cnt += 1
 		end
+
 		hashtags
 	end
 
@@ -110,12 +111,14 @@ class TwitNote < InitTwitNote
 					self.process_exit(status["text"])
 					if self.process_exist?(status["text"]) then
 						self.heartbeat
+
 					elsif check_tweet_text(status) then
 						note =self.note_setup(status)
 						begin
 							@note_store.createNote(@token, note)
 							puts "Successed cearted note. (at #{Time.now})"
 							@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
+
 						rescue => e
 							@twitclient.update("@#{@me["screen_name"]} ノートのアップロードに失敗しました \n #{e}")
 							puts "Field create note. (at #{Time.now})"

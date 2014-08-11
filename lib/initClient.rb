@@ -4,6 +4,10 @@
 
 #TweetlibのTweetlib::Clientのinitializeとトークン取得機構
 
+$:.unshift File.dirname(__FILE__)
+
+require 'initTweetnote'
+
 class InitClient
 	def initialize(keys)
 		@consumer_key = keys[0]
@@ -17,7 +21,7 @@ class InitClient
 			site:  "https://api.twitter.com"
 		)
 
-		if @oauth_token.empty? || @oauth_token == nil || @oauth_token_secret.empty? || @oauth_token_secret == nil then
+		if @oauth_token == nil || @oauth_token_secret == nil || @oauth_token.empty? || @oauth_token_secret.empty? then
 			puts "Please access the following URL because there is no access token."
 			buf_token = []
 			buf_token = self.fetch_token
@@ -40,9 +44,15 @@ class InitClient
 		
 		token = request_token.get_access_token(oauth_verifier: pin)
 
+		setup_config = InitTweetNote.new("cnf/tweetnote_config.json")
+		config = setup_config.get_config
+
 		access_token = []
-		puts access_token << token.token
-		puts access_token << token.secret
+		access_token << token.token
+		config["twitter"]["token"] = token.token.to_s
+		access_token << token.secret
+		config["twitter"]["token_secret"] = token.secret.to_s
+		setup_config.update_json(config)
 
 		access_token
 	end
