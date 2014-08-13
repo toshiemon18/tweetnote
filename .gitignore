@@ -14,16 +14,18 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 
+# =========================
+# 自分の環境で弾きたいファイル
+# =========================
+
 #CS\CKとか書いてあるファイルは弾きたいよね
 #Rubyの定数で管理してたのをjsonに変更した
-*.json
+tweetnote_config.json
 #SublimeTextのプロジェクトファイルもいらないから弾く
 *.sublime-project
 *.sublime-workspace
 #testディレクトの中身は弾きたい
 test/
-
-
 
 # =========================
 # Operating System Files
