@@ -1,0 +1,12 @@
+{
+	"action":{
+		"sandbox": true,
+		"feed_back": false,
+		"note_addition": false
+	},
+	"commands":{
+		"track_word":"#tweetnote",
+		"exit_command":"--quit",
+		"heartbeat_command":"Yo"
+	}
+}

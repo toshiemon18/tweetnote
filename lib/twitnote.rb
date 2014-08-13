@@ -20,8 +20,8 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 class TwitNote < InitTwitNote
 	#現在の設定状況をハッシュオブジェクトにして返す
 	def validation
-		validation = {"sandbox_mode" => SANDBOX,
-				"send_reply_mode" => FEED_BACK,
+		validation = {"sandbox_mode" => @tweetnote_config["action"]["sandbox"],
+				"send_reply_mode" => @tweetnote_config["action"]["feed_back"],
 				"logging_in_twitter_account" => @me["screen_name"].to_s,
 				"track_word" => @track_word,
 				"exit_command" => @exit_command,
