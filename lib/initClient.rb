@@ -52,7 +52,7 @@ class InitClient
 		config["twitter"]["token"] = token.token.to_s
 		access_token << token.secret
 		config["twitter"]["token_secret"] = token.secret.to_s
-		setup_config.update_json(config)
+		setup_config.update_keys(config)
 
 		access_token
 	end
