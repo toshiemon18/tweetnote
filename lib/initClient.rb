@@ -36,24 +36,25 @@ class InitClient
 	  	)
 	end
 
-	def fetch_token
-		request_token = @consumer.get_request_token
-		puts "Please access this URL : \n#{request_token.authorize_url}"
-		print "Please enter the PIN : "
-		pin = STDIN.gets.chomp
-		
-		token = request_token.get_access_token(oauth_verifier: pin)
+	private
+		def fetch_token
+			request_token = @consumer.get_request_token
+			puts "Please access this URL : \n#{request_token.authorize_url}"
+			print "Please enter the PIN : "
+			pin = STDIN.gets.chomp
+			
+			token = request_token.get_access_token(oauth_verifier: pin)
 
-		setup_config = InitTweetNote.new("cnf/tweetnote_config.json")
-		config = setup_config.get_config
+			setup_config = InitTweetNote.new("cnf/tweetnote_config.json")
+			config = setup_config.get_config
 
-		access_token = []
-		access_token << token.token
-		config["twitter"]["token"] = token.token.to_s
-		access_token << token.secret
-		config["twitter"]["token_secret"] = token.secret.to_s
-		setup_config.update_keys(config)
+			access_token = []
+			access_token << token.token
+			config["twitter"]["token"] = token.token.to_s
+			access_token << token.secret
+			config["twitter"]["token_secret"] = token.secret.to_s
+			setup_config.update_keys(config)
 
-		access_token
-	end
+			access_token
+		end
 end

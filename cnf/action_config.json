@@ -1,8 +1,7 @@
 {
 	"action":{
 		"sandbox": true,
-		"feed_back": false,
-		"note_addition": false
+		"feed_back": false
 	},
 	"commands":{
 		"track_word":"#tweetnote",

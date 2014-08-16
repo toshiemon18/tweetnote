@@ -7,4 +7,4 @@
 
 require './lib/twitnote.rb'
 
-TwitNote.new.observe
+TwitNote.new.monitoring_timeline
