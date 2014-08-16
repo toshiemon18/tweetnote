@@ -2,7 +2,6 @@
 #initTwitnote
 #
 
-# 慈悲はない
 #TwitNoteクラスのinitializie
 
 $:.unshift File.dirname(__FILE__)
@@ -52,7 +51,8 @@ class InitTwitNote
 		end
 	end
 
-	def setup
-		config = InitTweetNote.new
-	end
+	private
+		def setup
+			config = InitTweetNote.new
+		end
 end

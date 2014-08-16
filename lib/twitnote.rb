@@ -18,6 +18,7 @@ require 'openssl'
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 class TwitNote < InitTwitNote
+
 	#現在の設定状況をハッシュオブジェクトにして返す
 	def validation
 		validation = {"sandbox_mode" => @tweetnote_config["action"]["sandbox"],
@@ -30,7 +31,7 @@ class TwitNote < InitTwitNote
 	end
 
 	def check_tweet_text(status)
-		return false if status["entities"]["hashtags"].length == 0
+		return false if status["entities"]["hashtags"].length == 0 then
 		status["entities"]["hashtags"].each do |tag|
 			if tag["text"] == @track_word then
 				return true
@@ -106,24 +107,22 @@ class TwitNote < InitTwitNote
 	#FEED_BACK=trueの場合はリプライを送信
 	def upload_note
 		@twitclient.user_stream do |status|
-			if status["text"] then
-				if status["user"]["screen_name"] == @me["screen_name"] then
-					self.process_exit(status["text"])
-					if self.process_exist?(status["text"]) then
-						self.heartbeat
+			if status["text"] || status["user"]["screen_name"] == @me["screen_name"] then
+				self.process_exit(status["text"])
+				if self.process_exist?(status["text"]) then
+					self.heartbeat
 
-					elsif check_tweet_text(status) then
-						note =self.note_setup(status)
-						begin
-							@note_store.createNote(@token, note)
-							puts "Successed cearted note. (at #{Time.now})"
-							@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
+				elsif check_tweet_text(status) then
+					note =self.note_setup(status)
+					begin
+						@note_store.createNote(@token, note)
+						puts "Successed cearted note. (at #{Time.now})"
+						@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
 
-						rescue => e
-							@twitclient.update("@#{@me["screen_name"]} ノートのアップロードに失敗しました \n #{e}")
-							puts "Field create note. (at #{Time.now})"
-							puts "Exception that occurred is #{e}"
-						end
+					rescue => e
+						@twitclient.update("@#{@me["screen_name"]} ノートのアップロードに失敗しました \n #{e}")
+						puts "Field create note. (at #{Time.now})"
+						puts "Exception that occurred is #{e}"
 					end
 				end
 			end
@@ -143,7 +142,7 @@ class TwitNote < InitTwitNote
 
 	#OSがWin以外ならデーモン化する
 	#TL監視
-	def observe
+	def monitoring_timeline
 		puts "Boot TweetNote..."
 		self.print_config
 		puts "Conected to Twitter and Evernote."
