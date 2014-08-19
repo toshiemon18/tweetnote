@@ -30,13 +30,27 @@ class TwitNote < InitTwitNote
 			}
 	end
 
+	# 設定状況を表示
+	def print_config
+		validation = self.validation
+		puts "SandBox mode 			: #{validation["sandbox_mode"]}"
+		puts "Send reply mode 		: #{validation["send_reply_mode"]}"
+		puts "Logging in Twitter Account 	: #{validation["logging_in_twitter_account"]}"
+		puts "Track word 			: #{validation["track_word"]}"
+		puts "Exit command 			: #{validation["exit_command"]}"
+		puts "Heartbeat command 		: #{validation["heartbeat_command"]}"
+	end
+
+	# 取得したツイートに#tweetnoteが含まれているか調べる
 	def check_tweet_text(status)
-		return false if status["entities"]["hashtags"].length == 0 then
+		exist = false
 		status["entities"]["hashtags"].each do |tag|
 			if tag["text"] == @track_word then
-				return true
+				exist = true
 			end
 		end
+
+		exist
 	end
 
 	#ツイートのJSONからハッシュタグを抽出
@@ -60,6 +74,26 @@ class TwitNote < InitTwitNote
 		status_text
 	end
 
+	#プロセスが生きてるかを確認するためのメソッド
+	#生きていればTrue
+	def process_exist?(status_text)
+		status_text.match(/.*#{@heartbeat_command}*./)
+	end
+
+	# プロセスが生きていればリプライで通知する
+	def heartbeat
+		@twitclient.update("@#{@me["screen_name"]} ✋(   ͡° ͜ʖ ͡° ) (͡° ͜ʖ ͡°   )✋")
+	end
+
+	# プログラムを終了するコマンドを含むツイートが取得されたら実行される
+	def process_exit(status_text)
+		if status_text.match(/.*#{@exit_command}*./) then
+			@twitclient.update("@#{@me["screen_name"]} Tweetnoteを終了します。") if @feed_back
+			puts "\nDisconnected."
+			exit
+		end
+	end
+
 	#noteを生成
 	#noteのタイトルは作成時の時間とする
 	def make_note(text, tags=nil)
@@ -76,26 +110,6 @@ class TwitNote < InitTwitNote
 		note
 	end
 
-	#終了コマンドが含まれているツイートを取得したらプロセスを終了する
-	def process_exit(status_text)
-		if status_text.match(/.*#{@exit_command}*./) then
-			@twitclient.update("@#{@me["screen_name"]} tweetnoteを終了します") if @feed_back
-			puts "Disconnected."
-			exit
-		end
-	end
-
-	#プロセスが生きてるかを確認するためのメソッド
-	#生きていればTrue
-	def process_exist?(status_text)
-		status_text.match(/.*#{@heartbeat_command}*./)
-	end
-
-	# プロセスが生きていればリプライで通知する
-	def heartbeat
-		@twitclient.update("@#{@me["screen_name"]} ✋(   ͡° ͜ʖ ͡° ) (͡° ͜ʖ ͡°   )✋")
-	end
-
 	# ツイートからノートのオブジェクトをセットアップする
 	def note_setup(status)
 		hashtags = self.extract_tgas(status)
@@ -107,37 +121,28 @@ class TwitNote < InitTwitNote
 	#FEED_BACK=trueの場合はリプライを送信
 	def upload_note
 		@twitclient.user_stream do |status|
-			if status["text"] || status["user"]["screen_name"] == @me["screen_name"] then
-				self.process_exit(status["text"])
-				if self.process_exist?(status["text"]) then
-					self.heartbeat
+			if status["text"] then
+				if status["user"]["screen_name"] == @me["screen_name"]  && !(status["retweeted"]) then
+					self.process_exit(status["text"])
+					if self.process_exist?(status["text"]) then
+						self.heartbeat
 
-				elsif check_tweet_text(status) then
-					note =self.note_setup(status)
-					begin
-						@note_store.createNote(@token, note)
-						puts "Successed cearted note. (at #{Time.now})"
-						@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
+					elsif check_tweet_text(status) then
+						note =self.note_setup(status)
+						begin
+							@note_store.createNote(@token, note)
+							puts "Successed cearted note. (at #{Time.now})"
+							@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
 
-					rescue => e
-						@twitclient.update("@#{@me["screen_name"]} ノートのアップロードに失敗しました \n #{e}")
-						puts "Field create note. (at #{Time.now})"
-						puts "Exception that occurred is #{e}"
+						rescue => e
+							@twitclient.update("@#{@me["screen_name"]} ノートのアップロードに失敗しました \n #{e}")
+							puts "Field create note. (at #{Time.now})"
+							puts "Exception that occurred is #{e}"
+						end
 					end
 				end
 			end
 		end
-	end
-
-	# 設定状況を表示
-	def print_config
-		validation = self.validation
-		puts "SandBox mode 			: #{validation["sandbox_mode"]}"
-		puts "Send reply mode 		: #{validation["send_reply_mode"]}"
-		puts "Logging in Twitter Account 	: #{validation["logging_in_twitter_account"]}"
-		puts "Track word 			: #{validation["track_word"]}"
-		puts "Exit command 			: #{validation["exit_command"]}"
-		puts "Heartbeat command 		: #{validation["heartbeat_command"]}"
 	end
 
 	#OSがWin以外ならデーモン化する

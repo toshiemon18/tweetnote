@@ -20,14 +20,14 @@ class InitTweetNote
 		end
 	end
 
-	def update_keys(json_data)
+	def update_keys(hash_obj)
 		File.open(@path, "w") do |io|
-			JSON::dump(json_data, io)
+			JSON::dump(hash_obj, io)
 		end
 	end
 
 	def get_config
-		@json_config
+		@tweetnote_config
 	end
 
 	def tweetnote_setup

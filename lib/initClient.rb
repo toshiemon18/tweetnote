@@ -45,7 +45,7 @@ class InitClient
 			
 			token = request_token.get_access_token(oauth_verifier: pin)
 
-			setup_config = InitTweetNote.new("cnf/tweetnote_config.json")
+			setup_config = InitTweetNote.new
 			config = setup_config.get_config
 
 			access_token = []
