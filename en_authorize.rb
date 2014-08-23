@@ -2,11 +2,12 @@
 
 $LOAD_PATH.push(File.expand_path(File.dirname(__FILE__)))
 
-require 'lib/initTweetnote'
 require 'rubygems'
+require 'oauth'
 require 'evernote_oauth'
 require 'openssl'
 require 'sinatra'
+
 enable :sessions
 
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
@@ -15,13 +16,22 @@ OAUTH_CONSUMER_KEY = "toshiemon18-4917"
 OAUTH_CONSUMER_SECRET = "b5894e170c8a398b"
 SANDBOX = false
 
+puts nil
+puts "Please access \"localhost://4567/\""
+puts nil
+
 helpers do
   def auth_token
     session[:access_token].token if session[:access_token]
   end
 
   def client
-    @client ||= EvernoteOAuth::Client.new(token: auth_token, consumer_key:OAUTH_CONSUMER_KEY, consumer_secret:OAUTH_CONSUMER_SECRET, sandbox: SANDBOX)
+    @client ||= EvernoteOAuth::Client.new(
+          token: auth_token, 
+          consumer_key:OAUTH_CONSUMER_KEY, 
+          consumer_secret:OAUTH_CONSUMER_SECRET, 
+          sandbox: SANDBOX
+      )
   end
 
   def user_store
@@ -49,38 +59,26 @@ helpers do
   end
 end
 
-##
-# Index page
-##
 get '/' do
   erb :index
 end
 
-##
-# Reset the session
-##
 get '/reset' do
   session.clear
   redirect '/'
 end
 
-##
-# Obtain temporary credentials
-##
 get '/requesttoken' do
   callback_url = request.url.chomp("requesttoken").concat("callback")
   begin
     session[:request_token] = client.request_token(:oauth_callback => callback_url)
     redirect '/authorize'
   rescue => e
-    @last_error = "Error obtaining temporary credentials: #{e.message}"
+    @last_error = "Error obtaining temporary credentials: #{e}"
     erb :error
   end
 end
 
-##
-# Redirect the user to Evernote for authoriation
-##
 get '/authorize' do
   if session[:request_token]
     redirect session[:request_token].authorize_url
@@ -91,9 +89,6 @@ get '/authorize' do
   end
 end
 
-##
-# Receive callback from the Evernote authorization page
-##
 get '/callback' do
   unless params['oauth_verifier'] || session['request_token']
     @last_error = "Content owner did not authorize the temporary credentials"
@@ -109,10 +104,6 @@ get '/callback' do
   end
 end
 
-
-##
-# Access the user's Evernote account and display account data
-##
 get '/list' do
   begin
     # Get notebooks
@@ -123,11 +114,10 @@ get '/list' do
     session[:total_notes] = total_note_count
     erb :index
   rescue => e
-    @last_error = "Error listing notebooks: #{e.message}"
+    @last_error = "Error listing notebooks: #{e}"
     erb :error
   end
 end
-
 
 __END__
 
@@ -141,6 +131,9 @@ __END__
   <% if session[:notebooks] %>
   <hr />
   <h3>The current user is <%= session[:username] %> and there are <%= session[:total_notes] %> notes in their account</h3>
+  <br />
+  <h3>以下の文字列をコピーしてね</h3>
+  <h3><%= auth_token %></h3>
   <br />
   <h3>Here are the notebooks in this account:</h3>
   <ul>

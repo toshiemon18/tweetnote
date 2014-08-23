@@ -1,6 +1,6 @@
 {
 	"action":{
-		"sandbox": true,
+		"sandbox": false,
 		"feed_back": false
 	},
 	"commands":{
