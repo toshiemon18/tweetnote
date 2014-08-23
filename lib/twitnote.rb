@@ -21,13 +21,14 @@ class TwitNote < InitTwitNote
 
 	#現在の設定状況をハッシュオブジェクトにして返す
 	def validation
-		validation = {"sandbox_mode" => @tweetnote_config["action"]["sandbox"],
-				"send_reply_mode" => @tweetnote_config["action"]["feed_back"],
-				"logging_in_twitter_account" => @me["screen_name"].to_s,
-				"track_word" => @track_word,
-				"exit_command" => @exit_command,
-				"heartbeat_command" => @heartbeat_command
-			}
+		validation = {
+			"sandbox_mode" => @tweetnote_config["action"]["sandbox"],
+			"send_reply_mode" => @tweetnote_config["action"]["feed_back"],
+			"logging_in_twitter_account" => @me["screen_name"].to_s,
+			"track_word" => @track_word,
+			"exit_command" => @exit_command,
+			"heartbeat_command" => @heartbeat_command
+		}
 	end
 
 	# 設定状況を表示
@@ -43,14 +44,12 @@ class TwitNote < InitTwitNote
 
 	# 取得したツイートに#tweetnoteが含まれているか調べる
 	def check_tweet_text(status)
-		exist = false
+		return false if status["entities"]["hashtags"].size == 0
 		status["entities"]["hashtags"].each do |tag|
 			if tag["text"] == @track_word then
-				exist = true
+				return true
 			end
 		end
-
-		exist
 	end
 
 	#ツイートのJSONからハッシュタグを抽出

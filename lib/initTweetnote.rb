@@ -21,7 +21,7 @@ class InitTweetNote
 	end
 
 	def update_keys(hash_obj)
-		File.open(@path, "w") do |io|
+		File.open("cnf/tweetnote_config.json", "w") do |io|
 			JSON::dump(hash_obj, io)
 		end
 	end
