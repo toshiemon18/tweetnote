@@ -19,7 +19,7 @@ gems:
 ##Application Setup
 ###Evernote Authenticate
 	ruby en_authorize.rb
-上記のコマンドを実行し、ブラウザで以下のリンクに移動し、自身のEvernoteアカウントでこのアプリケーションを承認してください．
+上記のコマンドを実行し、ブラウザで以下のリンクに移動し、自身のEvernoteアカウントでこのアプリケーションを承認してください．(アクセストークンは自動で保存されるハイ・テックなシステムです．)  
 [localhost:4567/](localhost:4567/)
 
 ###Twitter Authenticate
