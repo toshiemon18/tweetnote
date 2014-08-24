@@ -1,7 +1,8 @@
 {
 	"action":{
 		"sandbox": false,
-		"feed_back": false
+		"feed_back": false,
+		"daemon_process_mode": true
 	},
 	"commands":{
 		"track_word":"#tweetnote",

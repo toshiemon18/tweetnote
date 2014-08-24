@@ -19,19 +19,17 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 class TwitNote < InitTwitNote
 
-	#現在の設定状況をハッシュオブジェクトにして返す
 	def validation
 		validation = {
 			"sandbox_mode" => @tweetnote_config["action"]["sandbox"],
 			"send_reply_mode" => @tweetnote_config["action"]["feed_back"],
-			"logging_in_twitter_account" => @me["screen_name"].to_s,
+			"logging_in_twitter_account" => @me["screen_name"],
 			"track_word" => @track_word,
 			"exit_command" => @exit_command,
 			"heartbeat_command" => @heartbeat_command
 		}
 	end
 
-	# 設定状況を表示
 	def print_config
 		validation = self.validation
 		puts "SandBox mode 			: #{validation["sandbox_mode"]}"
@@ -42,7 +40,6 @@ class TwitNote < InitTwitNote
 		puts "Heartbeat command 		: #{validation["heartbeat_command"]}"
 	end
 
-	# 取得したツイートに#tweetnoteが含まれているか調べる
 	def check_tweet_text(status)
 		return false if status["entities"]["hashtags"].size == 0
 		status["entities"]["hashtags"].each do |tag|
@@ -52,39 +49,34 @@ class TwitNote < InitTwitNote
 		end
 	end
 
-	#ツイートのJSONからハッシュタグを抽出
 	def extract_tgas(status)
 		hashtags = []
 		cnt = 0
 		status["entities"]["hashtags"].each do |tag|
-			hashtags[cnt] = tag["text"].to_s
+			hashtags[cnt] = tag["text"] unless tag["text"] == "tweetnote"
 			cnt += 1
 		end
 
 		hashtags
 	end
 
-	#ツイート本文からハッシュタグを削除
 	def tweet_demolish(status_text, hashtags)
+		tweet_text = status_text
 		hashtags.each do |tag|
-			status_text.to_s.slice!("#" + "#{tag}" + " ")
+			tweet_text.to_s.slice("#" + "#{tag}" + " ")
 		end
 
-		status_text
+		tweet_text
 	end
 
-	#プロセスが生きてるかを確認するためのメソッド
-	#生きていればTrue
 	def process_exist?(status_text)
 		status_text.match(/.*#{@heartbeat_command}*./)
 	end
 
-	# プロセスが生きていればリプライで通知する
 	def heartbeat
 		@twitclient.update("@#{@me["screen_name"]} ✋(   ͡° ͜ʖ ͡° ) (͡° ͜ʖ ͡°   )✋")
 	end
 
-	# プログラムを終了するコマンドを含むツイートが取得されたら実行される
 	def process_exit(status_text)
 		if status_text.match(/.*#{@exit_command}*./) then
 			@twitclient.update("@#{@me["screen_name"]} Tweetnoteを終了します。") if @feed_back
@@ -93,31 +85,23 @@ class TwitNote < InitTwitNote
 		end
 	end
 
-	#noteを生成
-	#noteのタイトルは作成時の時間とする
 	def make_note(text, tags=nil)
 		now = Time::now
-
-		body = "#{NOTE_HEADER}"
-		body << "<en-note>#{text}</en-note>"
 		note = Evernote::EDAM::Type::Note.new
 		note.title = "#{now.year}-#{now.month}-#{now.day}(#{now.hour}:#{now.min}:#{now.sec})"
-		note.content = body.to_s
+		note.content = "#{NOTE_HEADER}<en-note>#{text}</en-note>"
 		note.notebookGuid = @note_store.getDefaultNotebook(@token).guid
 		note.tagNames = tags if tags
 
 		note
 	end
 
-	# ツイートからノートのオブジェクトをセットアップする
 	def note_setup(status)
 		hashtags = self.extract_tgas(status)
 		note_content = self.tweet_demolish(status["text"], hashtags)
 		note = self.make_note(note_content, hashtags)
 	end
 
-	#@track_wordを含む自身のツイートをノートの形式にデータを加工してEvernoteにアップロード
-	#FEED_BACK=trueの場合はリプライを送信
 	def upload_note
 		@twitclient.user_stream do |status|
 			if status["text"] then
@@ -127,9 +111,8 @@ class TwitNote < InitTwitNote
 						self.heartbeat
 
 					elsif check_tweet_text(status) then
-						note =self.note_setup(status)
 						begin
-							@note_store.createNote(@token, note)
+							@note_store.createNote(@token, self.note_setup(status))
 							puts "Successed cearted note. (at #{Time.now})"
 							@twitclient.update("@#{@me["screen_name"]} ツイートをEvernoteへアップロードしました") if @feed_back
 
@@ -144,7 +127,17 @@ class TwitNote < InitTwitNote
 		end
 	end
 
-	#OSがWin以外ならデーモン化する
+	def check_os
+		require 'rbconfig'
+		platform = RbConfig::CONFIG["target_os"].downcase
+		os = platform =~ /mswin(?!ce)|mingw|cygwin|bccwin/ ? "win" : (platform =~ /linux/ ? "linux" : "other")
+		unless os == "win" then
+			return true
+		else
+			return false
+		end
+	end
+
 	#TL監視
 	def monitoring_timeline
 		puts "Boot TweetNote..."
@@ -152,12 +145,11 @@ class TwitNote < InitTwitNote
 		puts "Conected to Twitter and Evernote."
 		puts nil
 		@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました") if @feed_back
-		require 'rbconfig'
-		platform = RbConfig::CONFIG["target_os"].downcase
-		os = platform =~ /mswin(?!ce)|mingw|cygwin|bccwin/ ? "win" : (platform =~ /linux/ ? "linux" : "other")
-		unless os == "win" then
-			Process.daemon
-			puts "This is as daemon process."
+		if @tweetnote_config["action"]["daemon_process_mode"] then 
+			unless self.check_os then
+				Process.daemon
+				puts "This is as daemon process."
+			end
 		end
 
 		loop do 
