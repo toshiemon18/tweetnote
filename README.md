@@ -19,15 +19,15 @@ gems:
 ##Application Setup
 ###Evernote Authenticate
 	ruby en_authorize.rb
-上記のコマンドを実行し、ブラウザで以下のリンクに移動し、自身のEvernoteアカウントでこのアプリケーションを承認してください．(アクセストークンは自動で保存されるハイ・テックなシステムです．)  
+上記のコマンドを実行し、ブラウザで以下のリンクに移動し、自身のEvernoteアカウントでこのアプリケーションを承認してください。(アクセストークンは自動で保存されるハイ・テックなシステムです。)  
 [localhost:4567/](localhost:4567/)
 
 ###Twitter Authenticate
-アクセストークンが無い場合はtweetnote.rbを起動した時に承認用URLが表示されます．
-その承認用URLにアクセスし、自身のアカウントでこのアプリケーションを承認し、表示されたPINを入力してください．(アクセストークンは自動で保存されるハイ・テックなシステムです．)
+アクセストークンが無い場合はtweetnote.rbを起動した時に承認用URLが表示されます。
+その承認用URLにアクセスし、自身のアカウントでこのアプリケーションを承認し、表示されたPINを入力してください。(アクセストークンは自動で保存されるハイ・テックなシステムです。)
 
 ###TweetNote Config
-cnf/action_config.jsonを編集することでアプリケーションの動作を変えることが出来ます．
+cnf/action_config.jsonを編集することでアプリケーションの動作を変えることが出来ます。
 ```
 {
 	"action":{
@@ -45,8 +45,8 @@ cnf/action_config.jsonを編集することでアプリケーションの動作�
 ##Usage
 	ruby tweetnote.rb
 
- Twitterのアクセストークンが未取得の場合は承認用URLが表示されます．  
-"#tweenote"を付けてツイートするとEvernoteに保存されます．
+ Twitterのアクセストークンが未取得の場合は承認用URLが表示されます。  
+"#tweenote"を付けてツイートするとEvernoteに保存されます。
 
 ##開発環境
 Windows 8.1 x64  
