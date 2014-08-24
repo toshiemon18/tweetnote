@@ -17,15 +17,12 @@ $RECYCLE.BIN/
 # =========================
 # 自分の環境で弾きたいファイル
 # =========================
-
-#CS\CKとか書いてあるファイルは弾きたいよね
-#Rubyの定数で管理してたのをjsonに変更した
+*.html
 tweetnote_config.json
-#SublimeTextのプロジェクトファイルもいらないから弾く
 *.sublime-project
 *.sublime-workspace
-#testディレクトの中身は弾きたい
 test/
+en_authorize.rb
 
 
 # =========================
