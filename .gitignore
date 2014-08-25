@@ -22,9 +22,6 @@ tweetnote_config.json
 *.sublime-project
 *.sublime-workspace
 test/
-.gitattributes
-.gitignore
-
 
 # =========================
 # Operating System Files
