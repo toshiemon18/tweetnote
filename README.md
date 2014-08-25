@@ -15,6 +15,9 @@ gems:
 ###Install gem
 	bundle install
 
+###Install TweetNote
+	git clone git://github.com/toshiemon18/tweetnote.git
+
 ##Application Setup
 ###Evernote Authenticate
 	ruby en_authorize.rb
