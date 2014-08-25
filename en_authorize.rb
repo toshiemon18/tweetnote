@@ -2,6 +2,7 @@
 
 $LOAD_PATH.push(File.expand_path(File.dirname(__FILE__)))
 
+require 'lib/initTweetnote'
 require 'rubygems'
 require 'oauth'
 require 'evernote_oauth'
@@ -105,6 +106,9 @@ get '/callback' do
 end
 
 get '/list' do
+  keys = InitTweetNote.new.get_config
+  keys["evernote"]["token"] = auth_token
+  InitTweetNote.new::update_keys(keys)
   begin
     # Get notebooks
     session[:notebooks] = notebooks.map(&:name)
@@ -132,8 +136,6 @@ __END__
   <hr />
   <h3>The current user is <%= session[:username] %> and there are <%= session[:total_notes] %> notes in their account</h3>
   <br />
-  <h3>以下の文字列をコピーしてね</h3>
-  <h3><%= auth_token %></h3>
   <br />
   <h3>Here are the notebooks in this account:</h3>
   <ul>
