@@ -8,16 +8,59 @@
 
 $:.unshift File.dirname(__FILE__)
 
-require 'initTwitnote.rb'
+require 'tweetlib'
 require 'noteheader'
 require 'rubygems'
+require 'evernote_oauth'
 require 'openssl'
+require 'json'
 
 #なんかこの一行がないとEvernote側の通信がこける
 #そのくせ警告だして来るしたぶんEvernoteOauthが悪い
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
-class TwitNote < InitTwitNote
+class TwitNote
+
+	attr_accessor :track_word
+	attr_accessor :exit_command
+	attr_accessor :heartbeat_command
+
+	def initialize
+		twitter_config = setup.twitter_setup
+		evernote_config = setup.evernote_setup
+		@tweetnote_config = setup.tweetnote_setup
+
+		@twitclient = Tweetlib::Client.new(twitter_config.values)
+		@me = @twitclient.fetch_account_info
+		@token = evernote_config["token"]
+		@client = EvernoteOAuth::Client.new(
+			token: @token,
+			consumer_key: evernote_config["consumer_key"],
+			consumer_secret: evernote_config["consumer_secret"],
+			sandbox: @tweetnote_config["action"]["sandbox"]
+		)
+		
+		@track_word = @tweetnote_config["commands"]["track_word"]
+		@exit_command = @tweetnote_config["commands"]["exit_command"]
+		@heartbeat_command = @tweetnote_config["commands"]["heartbeat_command"]
+		@feed_back = @tweetnote_config["action"]["feed_back"]
+
+		begin
+			@note_store = @client.note_store
+		rescue => e
+			puts e
+		end
+
+		begin
+			@user_store = @client.user_store
+		rescue  => e
+			puts e
+		end
+	end
+
+	def setup
+		config = InitTweetNote.new
+	end
 
 	def validation
 		validation = {
@@ -41,12 +84,11 @@ class TwitNote < InitTwitNote
 	end
 
 	def check_tweet_text(status)
-		return false if status["entities"]["hashtags"].size == 0
+		sign = false
 		status["entities"]["hashtags"].each do |tag|
-			if tag["text"] == @track_word then
-				return true
-			end
+			sign = true if tag["text"] == @track_word
 		end
+		return sign
 	end
 
 	def extract_tgas(status)
@@ -56,17 +98,15 @@ class TwitNote < InitTwitNote
 			hashtags[cnt] = tag["text"] unless tag["text"] == "tweetnote"
 			cnt += 1
 		end
-
-		hashtags
+		return hashtags
 	end
 
 	def tweet_demolish(status_text, hashtags)
 		tweet_text = status_text
 		hashtags.each do |tag|
-			tweet_text.to_s.slice("#" + "#{tag}" + " ")
+			tweet_text.to_s.slice!("#" + "#{tag}" + " ")
 		end
-
-		tweet_text
+		return tweet_text.to_s.slice!("#tweetnote ")
 	end
 
 	def process_exist?(status_text)
@@ -80,7 +120,7 @@ class TwitNote < InitTwitNote
 	def process_exit(status_text)
 		if status_text.match(/.*#{@exit_command}*./) then
 			@twitclient.update("@#{@me["screen_name"]} Tweetnoteを終了します。") if @feed_back
-			puts "\nDisconnected."
+			puts "\nDisconnected. #{Time.now}"
 			exit
 		end
 	end
@@ -92,16 +132,18 @@ class TwitNote < InitTwitNote
 		note.content = "#{NOTE_HEADER}<en-note>#{text}</en-note>"
 		note.notebookGuid = @note_store.getDefaultNotebook(@token).guid
 		note.tagNames = tags if tags
-
-		note
+		return note
 	end
 
 	def note_setup(status)
 		hashtags = self.extract_tgas(status)
 		note_content = self.tweet_demolish(status["text"], hashtags)
 		note = self.make_note(note_content, hashtags)
+		return note
 	end
 
+	# @track_wordが含まれているログイン中のアカウントのツイートを取得したらノートをアップロードする
+	# コマンドに応じて対応する動作も行う
 	def upload_note
 		@twitclient.user_stream do |status|
 			if status["text"] then
@@ -127,11 +169,14 @@ class TwitNote < InitTwitNote
 		end
 	end
 
+	# プログラムを起動したプラットフォームを調べる
+	# Winならfalse
+	# UNIX系、その他のOSならばtrue
 	def check_os
 		require 'rbconfig'
 		platform = RbConfig::CONFIG["target_os"].downcase
 		os = platform =~ /mswin(?!ce)|mingw|cygwin|bccwin/ ? "win" : (platform =~ /linux/ ? "linux" : "other")
-		unless os == "win" then
+		if os != "win" then
 			return true
 		else
 			return false
@@ -145,11 +190,9 @@ class TwitNote < InitTwitNote
 		puts "Conected to Twitter and Evernote."
 		puts nil
 		@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました") if @feed_back
-		if @tweetnote_config["action"]["daemon_process_mode"] then 
-			unless self.check_os then
-				Process.daemon
-				puts "This is as daemon process."
-			end
+		if @tweetnote_config["action"]["daemon_process_mode"] || self.check_os then 
+			Process.daemon
+			puts "This is as daemon process."
 		end
 
 		loop do 

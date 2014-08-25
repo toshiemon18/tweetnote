@@ -5,7 +5,7 @@
 		"daemon_process_mode": true
 	},
 	"commands":{
-		"track_word":"#tweetnote",
+		"track_word":"tweetnote",
 		"exit_command":"--quit",
 		"heartbeat_command":"Yo"
 	}
