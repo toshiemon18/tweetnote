@@ -22,7 +22,6 @@ tweetnote_config.json
 *.sublime-project
 *.sublime-workspace
 test/
-en_authorize.rb
 
 
 # =========================

@@ -8,7 +8,6 @@ System :
 	Ruby2.0.0
 gems:
 
-	bundle
 	evernote_oauth
 	oauth
 	sinatra
