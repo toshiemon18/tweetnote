@@ -22,6 +22,8 @@ tweetnote_config.json
 *.sublime-project
 *.sublime-workspace
 test/
+.gitattaributes
+.gitignore
 
 
 # =========================
