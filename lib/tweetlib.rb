@@ -150,9 +150,9 @@ module Tweetlib
 				          			status = JSON.parse(line)
 							rescue
 				          			break
-				        			end
+				        		end
 				        			yield status
-					        	end
+					        end
 					end
 				end
 			end

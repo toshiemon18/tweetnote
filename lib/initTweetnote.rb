@@ -15,9 +15,9 @@ class InitTweetNote
 		@action_config = JSON::parse(File.read("cnf/action_config.json"))
 	end
 
-	def update_keys(hash_obj)
+	def update_keys(json)
 		File.open("cnf/tweetnote_config.json", "w") do |io|
-			JSON::dump(hash_obj, io)
+			JSON::dump(json, io)
 		end
 	end
 
