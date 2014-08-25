@@ -108,7 +108,7 @@ end
 get '/list' do
   
   obj = InitTweetNote.new
-  keys = obj..get_config
+  keys = obj.get_config
   keys["evernote"]["token"] = auth_token
   obj.update_keys(keys)
 
