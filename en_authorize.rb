@@ -106,9 +106,12 @@ get '/callback' do
 end
 
 get '/list' do
-  keys = InitTweetNote.new.get_config
+  
+  obj = InitTweetNote.new
+  keys = obj..get_config
   keys["evernote"]["token"] = auth_token
-  InitTweetNote.new::update_keys(keys)
+  obj.update_keys(keys)
+
   begin
     # Get notebooks
     session[:notebooks] = notebooks.map(&:name)

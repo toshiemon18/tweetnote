@@ -20,11 +20,6 @@ require 'json'
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 class TwitNote
-
-	attr_accessor :track_word
-	attr_accessor :exit_command
-	attr_accessor :heartbeat_command
-
 	def initialize
 		twitter_config = setup.twitter_setup
 		evernote_config = setup.evernote_setup

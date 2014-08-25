@@ -10,7 +10,6 @@ $:.unshift File.dirname(__FILE__)
 require 'json'
 
 class InitTweetNote
-
 	def initialize
 		@tweetnote_config = JSON::parse(File.read("cnf/tweetnote_config.json"))
 		@action_config = JSON::parse(File.read("cnf/action_config.json"))

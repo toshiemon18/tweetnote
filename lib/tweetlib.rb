@@ -16,7 +16,6 @@ require 'json'
 
 module Tweetlib
 	class Client
-
 		def initialize(keys)
 			@consumer_key = keys[0]
 			@consumer_secret = keys[1]
