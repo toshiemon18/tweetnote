@@ -3,6 +3,7 @@ TweetNote
 
 ##Installation
 cnf/\_tweetnote_config.jsonの"\_"をファイル名から削除してください
+コンシューマキーなどは含まれていません。
 ###Requirements
 System : 
 
