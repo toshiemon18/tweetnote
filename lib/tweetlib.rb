@@ -68,7 +68,7 @@ module Tweetlib
 			return JSON.parse(response.body)
 		end
 
-		#update tweet
+		# update tweet
 		def update(body, id="")
 			if id.empty? then
 				@access_token.post(
@@ -84,12 +84,12 @@ module Tweetlib
 			end
 		end
 
-		#delete tweet
+		# delete tweet
 		def delete_tweet(id)
 			@access_token.post("/1.1/status/destroy/#{id}.json")
 		end
 
-		#post favorite
+		# favorite
 		def favorite(id)
 			@access_token.post(
 					"/1.1/favorites/create.json",
@@ -97,7 +97,7 @@ module Tweetlib
 				)
 		end
 
-		#post unfavorite
+		# unfavorite
 		def unfavorite(id)
 			@access_token.post(
 					"/1.1/favorites/destroy.json",
@@ -105,7 +105,7 @@ module Tweetlib
 				)
 		end
 
-		#post retweet
+		# retweet
 		def retweet(id)
 			@access_token.post("/1.1/status/retweet/#{id}.json")
 		end

@@ -12,9 +12,9 @@ require 'sinatra'
 enable :sessions
 
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
-
-OAUTH_CONSUMER_KEY = "toshiemon18-4917"
-OAUTH_CONSUMER_SECRET = "b5894e170c8a398b"
+key = InitTweetNote.new.get_config
+OAUTH_CONSUMER_KEY = key["evernote"]["consumer_key"]
+OAUTH_CONSUMER_SECRET = key["evernote"]["consumer_secret"]
 SANDBOX = false
 
 puts nil

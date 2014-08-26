@@ -62,7 +62,7 @@ class TwitNote
 			"sandbox_mode" => @tweetnote_config["action"]["sandbox"],
 			"send_reply_mode" => @tweetnote_config["action"]["feed_back"],
 			"logging_in_twitter_account" => @me["screen_name"],
-			"track_word" => @track_word,
+			"track_word" => "#" + @track_word,
 			"exit_command" => @exit_command,
 			"heartbeat_command" => @heartbeat_command
 		}
@@ -185,7 +185,7 @@ class TwitNote
 		puts "Conected to Twitter and Evernote."
 		puts nil
 		@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました") if @feed_back
-		if @tweetnote_config["action"]["daemon_process_mode"] || self.check_os then 
+		if @tweetnote_config["action"]["daemon_process_mode"] && self.check_os then 
 			Process.daemon
 			puts "This is as daemon process."
 		end
