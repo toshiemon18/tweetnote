@@ -88,11 +88,7 @@ class TwitNote
 
 	def extract_tgas(status)
 		hashtags = []
-		cnt = 0
-		status["entities"]["hashtags"].each do |tag|
-			hashtags[cnt] = tag["text"] unless tag["text"] == "tweetnote"
-			cnt += 1
-		end
+		status["entities"]["hashtags"].each { |tag| hashtags << tag["text"] unless tag["text"] == "tweetnote" }
 		return hashtags
 	end
 
