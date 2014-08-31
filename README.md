@@ -3,11 +3,12 @@ TweetNote
 
 ##Installation
 cnf/\_tweetnote_config.jsonの"\_"をファイル名から削除してください
-コンシューマキーなどは含まれていません。
+コンシューマキーなどは含まれていませんので、自身で用意するかなにかしてください。
 ###Requirements
 System : 
 
 	Ruby2.0.0
+	Devkit
 gems:
 
 	evernote_oauth

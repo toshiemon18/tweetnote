@@ -15,6 +15,8 @@ require 'evernote_oauth'
 require 'openssl'
 require 'json'
 
+include Tweetlib
+
 #なんかこの一行がないとEvernote側の通信がこける
 #そのくせ警告だして来るしたぶんEvernoteOauthが悪い
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
@@ -25,7 +27,7 @@ class TwitNote
 		evernote_config = setup.evernote_setup
 		@tweetnote_config = setup.tweetnote_setup
 
-		@twitclient = Tweetlib::Client.new(twitter_config.values)
+		@twitclient = Client.new(twitter_config.values)
 		@me = @twitclient.fetch_account_info
 		@token = evernote_config["token"]
 		@client = EvernoteOAuth::Client.new(
@@ -88,7 +90,7 @@ class TwitNote
 
 	def extract_tgas(status)
 		hashtags = []
-		status["entities"]["hashtags"].each { |tag| hashtags << tag["text"] unless tag["text"] == "tweetnote" }
+		status["entities"]["hashtags"].each { |tag| hashtags << tag["text"].to_s }
 		return hashtags
 	end
 
@@ -97,7 +99,7 @@ class TwitNote
 		hashtags.each do |tag|
 			tweet_text.to_s.slice!("#" + "#{tag}" + " ")
 		end
-		return tweet_text.to_s.slice!("#tweetnote ")
+		tweet_text
 	end
 
 	def process_exist?(status_text)
