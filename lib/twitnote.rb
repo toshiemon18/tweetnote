@@ -99,6 +99,7 @@ class TwitNote
 		hashtags.each do |tag|
 			tweet_text.to_s.slice!("#" + "#{tag}" + " ")
 		end
+		tweet_text.to_s.slice!("#tweetnote")
 		tweet_text
 	end
 
@@ -188,8 +189,6 @@ class TwitNote
 			puts "This is as daemon process."
 		end
 
-		loop do 
-			self.upload_note
-		end
+		loop { self.upload_note }
 	end
 end
