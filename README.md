@@ -60,6 +60,6 @@ Ruby 2.0.0p481(i386-mingw32)
 #ToDo
 1, 追記モード  
 2, プラグイン機能  
-3, 画像添付機能
-4, Evernoteの承認の自動化
-5, トークン追加時のtweetnote_config.jsonのインデント崩壊をなんとかする
+3, 画像添付機能  
+4, Evernoteの承認の自動化  
+5, トークン追加時のtweetnote_config.jsonのインデント崩壊をなんとかする  
