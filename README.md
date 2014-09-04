@@ -57,7 +57,9 @@ cnf/action_config.jsonを編集することでアプリケーションの動作�
 Windows 8.1 x64  
 Ruby 2.0.0p481(i386-mingw32)
 
-#実装予定の機能
+#ToDo
 1, 追記モード  
 2, プラグイン機能  
 3, 画像添付機能
+4, Evernoteの承認の自動化
+5, トークン追加時のtweetnote_config.jsonのインデント崩壊をなんとかする
