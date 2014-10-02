@@ -20,8 +20,8 @@ $RECYCLE.BIN/
 *.html
 tweetnote_config.json
 Gemfile.lock
-*.sublime-project
-*.sublime-workspace
+*.sublime-
+*.sublime-*
 test/
 
 # =========================

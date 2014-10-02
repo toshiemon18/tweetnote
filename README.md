@@ -8,7 +8,6 @@ cnf/\_tweetnote_config.jsonの"\_"をファイル名から削除してくださ�
 System : 
 
 	Ruby2.0.0
-	Devkit
 gems:
 
 	evernote_oauth

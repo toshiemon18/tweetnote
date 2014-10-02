@@ -78,7 +78,7 @@ module Tweetlib
 			else
 				@access_token.post(
 					"/1.1/statuses/update.json",
-					{status: body.to_s,
+					{ status: body.to_s,
 					in_reply_to_status_id: id.to_s }
 				)
 			end
@@ -108,6 +108,10 @@ module Tweetlib
 		# retweet
 		def retweet(id)
 			@access_token.post("/1.1/status/retweet/#{id}.json")
+		end
+
+		# send Direct Message
+		def direct_message()
 		end
 
 		#track streaming

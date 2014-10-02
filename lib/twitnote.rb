@@ -44,13 +44,8 @@ class TwitNote
 
 		begin
 			@note_store = @client.note_store
-		rescue => e
-			puts e
-		end
-
-		begin
 			@user_store = @client.user_store
-		rescue  => e
+		rescue => e
 			puts e
 		end
 	end
@@ -61,8 +56,6 @@ class TwitNote
 
 	def validation
 		validation = {
-			"sandbox_mode" => @tweetnote_config["action"]["sandbox"],
-			"send_reply_mode" => @tweetnote_config["action"]["feed_back"],
 			"logging_in_twitter_account" => @me["screen_name"],
 			"track_word" => "#" + @track_word,
 			"exit_command" => @exit_command,
@@ -72,8 +65,6 @@ class TwitNote
 
 	def print_config
 		validation = self.validation
-		puts "SandBox mode 			: #{validation["sandbox_mode"]}"
-		puts "Send reply mode 		: #{validation["send_reply_mode"]}"
 		puts "Logging in Twitter Account 	: #{validation["logging_in_twitter_account"]}"
 		puts "Track word 			: #{validation["track_word"]}"
 		puts "Exit command 			: #{validation["exit_command"]}"
@@ -94,13 +85,13 @@ class TwitNote
 		return hashtags
 	end
 
-	def tweet_demolish(status_text, hashtags)
+	def tags_demolish(status_text, hashtags)
 		tweet_text = status_text
 		hashtags.each do |tag|
 			tweet_text.to_s.slice!("#" + "#{tag}" + " ")
 		end
 		tweet_text.to_s.slice!("#tweetnote")
-		tweet_text
+		return tweet_text
 	end
 
 	def process_exist?(status_text)
@@ -131,7 +122,7 @@ class TwitNote
 
 	def note_setup(status)
 		hashtags = self.extract_tgas(status)
-		note_content = self.tweet_demolish(status["text"], hashtags)
+		note_content = self.tags_demolish(status["text"], hashtags)
 		note = self.make_note(note_content, hashtags)
 		return note
 	end
@@ -162,10 +153,7 @@ class TwitNote
 			end
 		end
 	end
-
-	# プログラムを起動したプラットフォームを調べる
-	# Winならfalse
-	# UNIX系、その他のOSならばtrue
+	
 	def check_os
 		require 'rbconfig'
 		platform = RbConfig::CONFIG["target_os"].downcase
