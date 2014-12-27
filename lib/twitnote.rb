@@ -54,23 +54,6 @@ class TwitNote
 		config = InitTweetNote.new
 	end
 
-	def validation
-		validation = {
-			"logging_in_twitter_account" => @me["screen_name"],
-			"track_word" => "#" + @track_word,
-			"exit_command" => @exit_command,
-			"heartbeat_command" => @heartbeat_command
-		}
-	end
-
-	def print_config
-		validation = self.validation
-		puts "Logging in Twitter Account 	: #{validation["logging_in_twitter_account"]}"
-		puts "Track word 			: #{validation["track_word"]}"
-		puts "Exit command 			: #{validation["exit_command"]}"
-		puts "Heartbeat command 		: #{validation["heartbeat_command"]}"
-	end
-
 	def check_tweet_text(status)
 		sign = false
 		status["entities"]["hashtags"].each do |tag|
@@ -85,7 +68,7 @@ class TwitNote
 		return hashtags
 	end
 
-	def tags_demolish(status_text, hashtags)
+	def tags_decompose(status_text, hashtags)
 		tweet_text = status_text
 		hashtags.each do |tag|
 			tweet_text.to_s.slice!("#" + "#{tag}" + " ")
@@ -94,12 +77,10 @@ class TwitNote
 		return tweet_text
 	end
 
-	def process_exist?(status_text)
-		status_text.match(/.*#{@heartbeat_command}*./)
-	end
-
 	def heartbeat
-		@twitclient.update("@#{@me["screen_name"]} ✋(   ͡° ͜ʖ ͡° ) (͡° ͜ʖ ͡°   )✋")
+    if status_text.match(/.*#{@heartbeat_command}*./) then
+		  @twitclient.update("@#{@me["screen_name"]} ✋(   ͡° ͜ʖ ͡° ) (͡° ͜ʖ ͡°   )✋")
+    end
 	end
 
 	def process_exit(status_text)
@@ -122,7 +103,7 @@ class TwitNote
 
 	def note_setup(status)
 		hashtags = self.extract_tgas(status)
-		note_content = self.tags_demolish(status["text"], hashtags)
+		note_content = self.tags_decompose(status["text"], hashtags)
 		note = self.make_note(note_content, hashtags)
 		return note
 	end
@@ -134,10 +115,9 @@ class TwitNote
 			if status["text"] then
 				if status["user"]["screen_name"] == @me["screen_name"]  && !(status["retweeted"]) then
 					self.process_exit(status["text"])
-					if self.process_exist?(status["text"]) then
-						self.heartbeat
+					self.heartbeat
 
-					elsif check_tweet_text(status) then
+					if check_tweet_text(status) then
 						begin
 							@note_store.createNote(@token, self.note_setup(status))
 							puts "Successed cearted note. (at #{Time.now})"
@@ -153,29 +133,13 @@ class TwitNote
 			end
 		end
 	end
-	
-	def check_os
-		require 'rbconfig'
-		platform = RbConfig::CONFIG["target_os"].downcase
-		os = platform =~ /mswin(?!ce)|mingw|cygwin|bccwin/ ? "win" : (platform =~ /linux/ ? "linux" : "other")
-		if os != "win" then
-			return true
-		else
-			return false
-		end
-	end
 
 	#TL監視
-	def monitoring_timeline
+	def run
 		puts "Boot TweetNote..."
-		self.print_config
 		puts "Conected to Twitter and Evernote."
 		puts nil
 		@twitclient.update("@#{@me["screen_name"]} tweetnoteを起動しました") if @feed_back
-		if @tweetnote_config["action"]["daemon_process_mode"] && self.check_os then 
-			Process.daemon
-			puts "This is as daemon process."
-		end
 
 		loop { self.upload_note }
 	end
